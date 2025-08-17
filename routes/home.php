@@ -6,9 +6,9 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 return function (App $app, Twig $twig) {
+    $app->get(DIRECTORY_SEPARATOR, function (Request $request, Response $response) use ($twig) {
+        global $templateNames;
 
-    $app->get('/', function (Request $request, Response $response) use ($twig) {
-
-        return $twig->render($response, 'home.html.twig');
+        return $twig->render($response, $templateNames->home);
     });
 };

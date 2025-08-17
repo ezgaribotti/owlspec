@@ -6,5 +6,6 @@ npm-debug.log
 .env.production
 
 *.output.css
+*.sh
 package-lock.json
 composer.lock

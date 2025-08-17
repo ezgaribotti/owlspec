@@ -1,5 +1,6 @@
 <?php
 
+use Dotenv\Dotenv;
 use Slim\Factory\AppFactory;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
@@ -31,18 +32,37 @@ function data_wrap(array $data = []): object {
 
 require root_path('vendor/autoload.php');
 
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+$dotenv = Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
-
 $environment = data_wrap($_ENV);
 
-$twig = Twig::create(root_path('templates'));
-$twig->getEnvironment()
-    ->addGlobal('default', $environment->default_template);
+$templates = root_path('templates'); // All views
+
+$twig = Twig::create($templates);
+
+// The same base template is used for all views
+
+$twig->getEnvironment()->addGlobal('base', $environment->base_template);
+
+$templateNames = data_wrap();
+foreach (scandir($templates) as $template) {
+    if (strlen($template) <= 2) {
+        continue;
+    }
+    $templateNames->{substr($template, 0, -10)} = $template;
+}
 
 $app = AppFactory::create();
 $app->add(TwigMiddleware::create($app, $twig));
 
-(require_once root_path('src/index.php'))($app, $twig);
+$routes = root_path('routes'); // I can define all the routes I need
 
+foreach (scandir($routes) as $route) {
+    if (strlen($route) <= 2) {
+        continue;
+    }
+    $path = basename($routes) . DIRECTORY_SEPARATOR . $route;
+
+    (require_once root_path($path))($app, $twig);
+}
 $app->run();
